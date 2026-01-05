@@ -1,0 +1,158 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ================================
+   Base Layout
+   ================================ */
+html,
+body,
+#root {
+  height: 100%;
+  background: #0b0f14;
+  color-scheme: dark;
+  overflow: hidden;
+}
+
+/* ================================
+   Cortex Deep Space Background
+   (Fallback if canvas not loaded)
+   ================================ */
+body {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(168, 85, 247, 0.06), transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.05), transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.04), transparent 55%),
+    #0b0f14;
+}
+
+/* ================================
+   Starfield Canvas Layer
+   ================================ */
+.starfield {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: transparent;
+}
+
+/* Optional subtle nebula haze */
+.starfield::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 30% 40%, rgba(168,85,247,0.08), transparent 55%),
+    radial-gradient(circle at 70% 60%, rgba(99,102,241,0.06), transparent 60%);
+  mix-blend-mode: screen;
+  opacity: 0.4;
+}
+
+/* ================================
+   Glass / Blur Utilities
+   ================================ */
+.glass {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* ================================
+   Cortex Glow System
+   ================================ */
+
+/* Static ambient purple glow */
+.glow-purple {
+  box-shadow:
+    0 0 0 1px rgba(168, 85, 247, 0.25),
+    0 0 18px rgba(168, 85, 247, 0.35),
+    0 0 36px rgba(168, 85, 247, 0.15);
+}
+
+/* Strong glow (voice listening) */
+.glow-purple-strong {
+  box-shadow:
+    0 0 0 1px rgba(168, 85, 247, 0.45),
+    0 0 30px rgba(168, 85, 247, 0.55),
+    0 0 60px rgba(168, 85, 247, 0.25);
+}
+
+/* ================================
+   Glow Animation (Premium)
+   ================================ */
+@keyframes glowPulse {
+  0% {
+    box-shadow:
+      0 0 0 1px rgba(168,85,247,0.25),
+      0 0 18px rgba(168,85,247,0.35),
+      0 0 36px rgba(168,85,247,0.15);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(168,85,247,0.45),
+      0 0 30px rgba(168,85,247,0.6),
+      0 0 70px rgba(168,85,247,0.3);
+  }
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(168,85,247,0.25),
+      0 0 18px rgba(168,85,247,0.35),
+      0 0 36px rgba(168,85,247,0.15);
+  }
+}
+
+.glow-animate {
+  animation: glowPulse 2.8s ease-in-out infinite;
+}
+
+/* ================================
+   Input Focus Glow (Query Box)
+   ================================ */
+.input-idle {
+  box-shadow:
+    0 0 0 1px rgba(168,85,247,0.18),
+    0 0 12px rgba(168,85,247,0.2);
+}
+
+.input-focus {
+  animation: glowPulse 2.4s ease-in-out infinite;
+}
+
+/* ================================
+   Sidebar Utilities
+   ================================ */
+.sidebar-btn {
+  @apply flex items-center gap-3 px-3 py-2 rounded-md
+         hover:bg-white/5 text-sm transition;
+}
+
+.sidebar-btn-active {
+  @apply bg-white/10 text-white;
+}
+
+/* ================================
+   Voice / Mic Visual Language
+   ================================ */
+.mic-idle {
+  color: rgba(255,255,255,0.6);
+}
+
+.mic-active {
+  color: rgb(192, 132, 252); /* purple-400 */
+}
+
+/* ================================
+   Smooth UI Transitions
+   ================================ */
+* {
+  transition-property:
+    background-color,
+    border-color,
+    color,
+    box-shadow,
+    transform,
+    opacity;
+  transition-duration: 200ms;
+  transition-timing-function: ease-out;
+}
