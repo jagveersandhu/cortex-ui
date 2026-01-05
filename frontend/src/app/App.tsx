@@ -7,30 +7,50 @@ import { useChat } from "../hooks/useChat"
 
 export default function App() {
   const [userName, setUserName] = useState<string | null>(null)
+
+  // onboarding → only once
   const [showNamePrompt, setShowNamePrompt] = useState(true)
+
+  // layout control
+  const [isChatView, setIsChatView] = useState(false)
 
   const [micEnabled, setMicEnabled] = useState(false)
   const [voiceMode, setVoiceMode] = useState(false)
 
-  // ✅ SINGLE chat instance
   const chat = useChat()
 
   /* ===============================
-     🏠 HOME CLICK
+     🏠 LOGO CLICK → WELCOME UI
      =============================== */
-  const handleHomeClick = () => {
+  const handleLogoClick = () => {
     setVoiceMode(false)
     chat.resetChat()
+
+    // ⬅️ THIS IS THE KEY
+    setIsChatView(false)
+
+    // ❌ never reopen name modal
+    setShowNamePrompt(false)
+
     window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  /* ===============================
+     ✏️ NEW CHAT → CHAT UI
+     =============================== */
+  const handleNewChat = () => {
+    setVoiceMode(false)
+    chat.resetChat()
+    setIsChatView(true)
   }
 
   return (
     <div className="h-screen flex bg-black text-white relative overflow-hidden">
       <Starfield />
 
-      {/* Brand — TEXT ONLY */}
+      {/* BRAND — CLICKABLE */}
       <button
-        onClick={handleHomeClick}
+        onClick={handleLogoClick}
         className="
           fixed top-6 left-1/2 -translate-x-1/2
           z-40
@@ -39,6 +59,7 @@ export default function App() {
           text-white/95
           hover:opacity-90
           transition
+          select-none
         "
       >
         Cortex
@@ -47,25 +68,33 @@ export default function App() {
       <Sidebar
         micEnabled={micEnabled}
         onMicToggle={setMicEnabled}
-        onHomeClick={handleHomeClick}
+        onHomeClick={handleLogoClick}
+        onNewChat={handleNewChat}
       />
 
       <ChatArea
         userName={userName ?? "there"}
         micEnabled={micEnabled}
         voiceMode={voiceMode}
+        isChatView={isChatView}
+        onStartChat={() => setIsChatView(true)}
         onVoiceStart={() => setVoiceMode(true)}
         onVoiceStop={() => setVoiceMode(false)}
         chat={chat}
       />
 
+      {/* ONBOARDING — FIRST LOAD ONLY */}
       {showNamePrompt && (
         <NamePromptModal
           onSubmit={(name) => {
             setUserName(name)
             setShowNamePrompt(false)
+            setIsChatView(false)
           }}
-          onSkip={() => setShowNamePrompt(false)}
+          onSkip={() => {
+            setShowNamePrompt(false)
+            setIsChatView(false)
+          }}
         />
       )}
     </div>

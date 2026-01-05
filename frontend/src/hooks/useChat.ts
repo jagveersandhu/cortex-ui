@@ -12,7 +12,7 @@ export function useChat() {
   const [loading, setLoading] = useState(false)
   const [draft, setDraft] = useState("")
 
-  // Keep latest messages for regenerate (avoids stale state)
+  // Keeps latest messages (prevents stale closures)
   const messagesRef = useRef<ChatMessage[]>([])
   messagesRef.current = messages
 
@@ -84,7 +84,16 @@ export function useChat() {
   }
 
   /* ===============================
-     🏠 RESET CHAT
+     🆕 NEW CHAT (STAY IN CHAT UI)
+     =============================== */
+  function startNewChat() {
+    setMessages([])
+    setDraft("")
+    setLoading(false)
+  }
+
+  /* ===============================
+     🏠 HARD RESET (OPTIONAL)
      =============================== */
   function resetChat() {
     setMessages([])
@@ -100,7 +109,8 @@ export function useChat() {
     sendMessage,
     editMessage,
     regenerate,
-    resetChat,
+    startNewChat, // 👈 use this for "New Chat"
+    resetChat,    // 👈 optional hard reset
   }
 }
 

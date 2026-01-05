@@ -12,20 +12,20 @@ type SidebarProps = {
   micEnabled: boolean
   onMicToggle: (active: boolean) => void
   onHomeClick: () => void
+  onNewChat: () => void   // ✅ already passed from App
 }
 
 export default function Sidebar({
   micEnabled,
   onMicToggle,
   onHomeClick,
+  onNewChat,
 }: SidebarProps) {
   const [open, setOpen] = useState(false)
 
   return (
     <>
-      {/* =====================================================
-          FIXED LOGO — CLICKABLE HOME (GROK STYLE)
-         ===================================================== */}
+      {/* FIXED LOGO — HOME */}
       <div
         className="
           fixed
@@ -39,12 +39,7 @@ export default function Sidebar({
       >
         <button
           onClick={onHomeClick}
-          className="
-            w-10 h-10
-            flex items-center justify-center
-            hover:opacity-90
-            transition
-          "
+          className="w-10 h-10 flex items-center justify-center hover:opacity-90 transition"
           aria-label="Go to home"
         >
           <img
@@ -55,9 +50,7 @@ export default function Sidebar({
         </button>
       </div>
 
-      {/* =====================================================
-          SIDEBAR
-         ===================================================== */}
+      {/* SIDEBAR */}
       <aside
         className={`
           h-full
@@ -68,12 +61,8 @@ export default function Sidebar({
           flex flex-col
         `}
       >
-        {/* Spacer — locks nav under logo */}
         <div className="h-[88px]" />
 
-        {/* =====================================================
-            NAV STACK
-           ===================================================== */}
         <nav
           className={`
             flex flex-col
@@ -82,11 +71,13 @@ export default function Sidebar({
             px-2
           `}
         >
+          {/* ✅ EXISTING CHAT BUTTON — NOW WIRED */}
           <NavItem
             icon={<Pencil size={20} />}
             label="Chat"
             open={open}
             active
+            onClick={onNewChat}
           />
 
           <NavItem
@@ -105,9 +96,6 @@ export default function Sidebar({
 
         <div className="flex-1" />
 
-        {/* =====================================================
-            COLLAPSE BUTTON — CORNER BEHAVIOR
-           ===================================================== */}
         <div
           className={`
             pb-4
@@ -117,18 +105,11 @@ export default function Sidebar({
         >
           <button
             onClick={() => setOpen(!open)}
-            className="
-              w-10 h-10
-              rounded-lg
-              hover:bg-white/10
-              flex items-center justify-center
-            "
+            className="w-10 h-10 rounded-lg hover:bg-white/10 flex items-center justify-center"
           >
             <ChevronLeft
               size={18}
-              className={`transition-transform ${
-                open ? "" : "rotate-180"
-              }`}
+              className={`transition-transform ${open ? "" : "rotate-180"}`}
             />
           </button>
         </div>
@@ -137,10 +118,7 @@ export default function Sidebar({
   )
 }
 
-/* =====================================================
-   NAV ITEM
-   ===================================================== */
-
+/* NAV ITEM — UNCHANGED */
 function NavItem({
   icon,
   label,

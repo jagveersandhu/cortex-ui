@@ -8,6 +8,8 @@ type ChatAreaProps = {
   userName: string
   micEnabled: boolean
   voiceMode: boolean
+  isChatView: boolean
+  onStartChat: () => void
   onVoiceStart: () => void
   onVoiceStop: () => void
   chat: UseChatReturn
@@ -17,6 +19,8 @@ export default function ChatArea({
   userName,
   micEnabled,
   voiceMode,
+  isChatView,
+  onStartChat,
   onVoiceStart,
   onVoiceStop,
   chat,
@@ -32,8 +36,10 @@ export default function ChatArea({
   } = chat
 
   const [showMicWarning, setShowMicWarning] = useState(false)
-  const hasStartedChat = messages.length > 0
 
+  /* ===============================
+     🎤 VOICE OVERLAY
+     =============================== */
   if (voiceMode) {
     return (
       <div className="flex-1 relative">
@@ -42,24 +48,29 @@ export default function ChatArea({
     )
   }
 
+  /* ===============================
+     SEND HANDLER
+     =============================== */
   const handleSend = (text: string) => {
+    if (!text.trim()) return
+    onStartChat()          // ⬅️ switch to chat layout
     sendMessage(text)
     setDraft("")
   }
 
   return (
     <div className="flex-1 relative flex flex-col">
+      {/* ===============================
+          MAIN CONTENT
+         =============================== */}
       <div
         className={`
           flex-1 px-6
-          ${
-            hasStartedChat
-              ? "overflow-y-auto pt-10 pb-36"
-              : "flex items-center justify-center"
-          }
+          ${isChatView ? "overflow-y-auto pt-10 pb-36" : "flex items-center justify-center"}
         `}
       >
-        {!hasStartedChat ? (
+        {!isChatView ? (
+          /* -------- WELCOME UI -------- */
           <div className="w-full max-w-3xl mx-auto flex flex-col items-start -mt-24">
             <div className="mb-3 text-white/80 text-base font-medium">
               ✨ Hi {userName}
@@ -93,6 +104,7 @@ export default function ChatArea({
             </div>
           </div>
         ) : (
+          /* -------- CHAT UI -------- */
           <div className="max-w-3xl mx-auto flex flex-col gap-4">
             {messages.map((m) => (
               <Message
@@ -112,7 +124,10 @@ export default function ChatArea({
         )}
       </div>
 
-      {hasStartedChat && (
+      {/* ===============================
+          BOTTOM INPUT (CHAT ONLY)
+         =============================== */}
+      {isChatView && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-3xl px-6">
           <InputBar
             value={draft}
