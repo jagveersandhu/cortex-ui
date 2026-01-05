@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { sendMessageToAPI } from "../services/api"
 
 export type ChatMessage = {
@@ -10,8 +10,15 @@ export type ChatMessage = {
 export function useChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loading, setLoading] = useState(false)
-  const [draft, setDraft] = useState("") // 👈 for Edit
+  const [draft, setDraft] = useState("")
 
+  // Keep latest messages for regenerate (avoids stale state)
+  const messagesRef = useRef<ChatMessage[]>([])
+  messagesRef.current = messages
+
+  /* ===============================
+     📩 SEND MESSAGE
+     =============================== */
   async function sendMessage(text: string) {
     if (!text.trim()) return
 
@@ -24,28 +31,35 @@ export function useChat() {
     setMessages((prev) => [...prev, userMsg])
     setLoading(true)
 
-    const response = await sendMessageToAPI(text)
+    try {
+      const response = await sendMessageToAPI(text)
 
-    const assistantMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      role: "assistant",
-      content: response,
+      const assistantMsg: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: response,
+      }
+
+      setMessages((prev) => [...prev, assistantMsg])
+    } finally {
+      setLoading(false)
+      setDraft("")
     }
-
-    setMessages((prev) => [...prev, assistantMsg])
-    setLoading(false)
   }
 
   /* ===============================
-     ✏️ EDIT MESSAGE
+     ✏️ EDIT USER MESSAGE
      =============================== */
   function editMessage(messageId: string) {
     setMessages((prev) => {
       const index = prev.findIndex((m) => m.id === messageId)
       if (index === -1) return prev
 
-      setDraft(prev[index].content)
-      return prev.slice(0, index) // remove everything after
+      const msg = prev[index]
+      if (msg.role !== "user") return prev
+
+      setDraft(msg.content)
+      return prev.slice(0, index)
     })
   }
 
@@ -53,29 +67,41 @@ export function useChat() {
      🔁 REGENERATE RESPONSE
      =============================== */
   async function regenerate(messageId: string) {
-    setMessages((prev) => {
-      const index = prev.findIndex((m) => m.id === messageId)
-      if (index <= 0) return prev
-      return prev.slice(0, index) // remove assistant msg
-    })
+    const current = messagesRef.current
+    const index = current.findIndex((m) => m.id === messageId)
 
-    const prevUser = messages
-      .slice()
+    if (index === -1 || current[index].role !== "assistant") return
+
+    const prevUser = [...current]
+      .slice(0, index)
       .reverse()
       .find((m) => m.role === "user")
 
-    if (prevUser) {
-      await sendMessage(prevUser.content)
-    }
+    if (!prevUser) return
+
+    setMessages(current.slice(0, index))
+    await sendMessage(prevUser.content)
+  }
+
+  /* ===============================
+     🏠 RESET CHAT
+     =============================== */
+  function resetChat() {
+    setMessages([])
+    setDraft("")
+    setLoading(false)
   }
 
   return {
     messages,
     loading,
+    draft,
+    setDraft,
     sendMessage,
     editMessage,
     regenerate,
-    draft,
-    setDraft,
+    resetChat,
   }
 }
+
+export type UseChatReturn = ReturnType<typeof useChat>

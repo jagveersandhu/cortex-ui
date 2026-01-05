@@ -61,8 +61,6 @@ body {
 /* ================================
    Cortex Glow System
    ================================ */
-
-/* Static ambient purple glow */
 .glow-purple {
   box-shadow:
     0 0 0 1px rgba(168, 85, 247, 0.25),
@@ -70,7 +68,6 @@ body {
     0 0 36px rgba(168, 85, 247, 0.15);
 }
 
-/* Strong glow (voice listening) */
 .glow-purple-strong {
   box-shadow:
     0 0 0 1px rgba(168, 85, 247, 0.45),
@@ -79,7 +76,7 @@ body {
 }
 
 /* ================================
-   Glow Animation (Premium)
+   Glow Animation
    ================================ */
 @keyframes glowPulse {
   0% {
@@ -107,7 +104,7 @@ body {
 }
 
 /* ================================
-   Input Focus Glow (Query Box)
+   Input Focus Glow
    ================================ */
 .input-idle {
   box-shadow:
@@ -139,7 +136,7 @@ body {
 }
 
 .mic-active {
-  color: rgb(192, 132, 252); /* purple-400 */
+  color: rgb(192, 132, 252);
 }
 
 /* ================================
@@ -155,4 +152,37 @@ body {
     opacity;
   transition-duration: 200ms;
   transition-timing-function: ease-out;
+}
+
+/* ================================
+   Minimal Auto-Hide Scrollbar
+   (Option 1 — Premium)
+   ================================ */
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168, 85, 247, 0.45) transparent;
+}
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(168, 85, 247, 0.4);
+  border-radius: 999px;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+/* Visible only on hover / scroll */
+*:hover::-webkit-scrollbar-thumb {
+  opacity: 1;
 }

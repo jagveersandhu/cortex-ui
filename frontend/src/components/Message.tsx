@@ -1,11 +1,9 @@
+import { useState } from "react"
 import { Copy, Pencil, RotateCcw } from "lucide-react"
+import { ChatMessage } from "../hooks/useChat"
 
 type MessageProps = {
-  message: {
-    id: string
-    role: "user" | "assistant"
-    content: string
-  }
+  message: ChatMessage
   onEdit: (id: string) => void
   onRegenerate: (id: string) => void
 }
@@ -15,6 +13,7 @@ export default function Message({
   onEdit,
   onRegenerate,
 }: MessageProps) {
+  const [hovered, setHovered] = useState(false)
   const isUser = message.role === "user"
 
   const handleCopy = () => {
@@ -23,73 +22,62 @@ export default function Message({
 
   return (
     <div
-      className={`
-        relative group
-        flex ${isUser ? "justify-end" : "justify-start"}
-      `}
+      className={`relative flex ${isUser ? "justify-end" : "justify-start"}`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
-      {/* ===============================
-          MESSAGE BUBBLE
-         =============================== */}
+      {/* MESSAGE BUBBLE */}
       <div
         className={`
           max-w-[75%]
           px-4 py-3 rounded-2xl
           text-sm leading-relaxed
-          ${isUser
-            ? "bg-white/10 text-white"
-            : "bg-white/5 text-white/90"}
+          ${isUser ? "bg-white/10 text-white" : "bg-white/5 text-white/90"}
         `}
       >
         {message.content}
       </div>
 
-      {/* ===============================
-          ACTION BUTTONS (HOVER)
-         =============================== */}
-      <div
-        className={`
-          absolute -bottom-7
-          ${isUser ? "right-2" : "left-2"}
-          flex gap-2
-          bg-black/70 backdrop-blur-md
-          px-2 py-1 rounded-lg
-          border border-white/10
-          opacity-0 group-hover:opacity-100
-          transition
-          z-20
-        `}
-      >
-        <ActionButton onClick={handleCopy} icon={<Copy size={14} />} />
+      {/* ACTIONS */}
+      {hovered && (
+        <div
+          className={`
+            absolute -bottom-7
+            ${isUser ? "right-2" : "left-2"}
+            flex gap-2
+            bg-black/70 backdrop-blur-md
+            px-2 py-1 rounded-lg
+            border border-white/10
+            z-20
+          `}
+        >
+          <ActionButton icon={<Copy size={14} />} onClick={handleCopy} />
 
-        {isUser && (
-          <ActionButton
-            onClick={() => onEdit(message.id)}
-            icon={<Pencil size={14} />}
-          />
-        )}
+          {isUser && (
+            <ActionButton
+              icon={<Pencil size={14} />}
+              onClick={() => onEdit(message.id)}
+            />
+          )}
 
-        {!isUser && (
-          <ActionButton
-            onClick={() => onRegenerate(message.id)}
-            icon={<RotateCcw size={14} />}
-          />
-        )}
-      </div>
+          {!isUser && (
+            <ActionButton
+              icon={<RotateCcw size={14} />}
+              onClick={() => onRegenerate(message.id)}
+            />
+          )}
+        </div>
+      )}
     </div>
   )
 }
 
-/* ===============================
-   ACTION BUTTON
-   =============================== */
-
 function ActionButton({
-  onClick,
   icon,
+  onClick,
 }: {
-  onClick: () => void
   icon: React.ReactNode
+  onClick: () => void
 }) {
   return (
     <button

@@ -2,7 +2,7 @@ import { useState } from "react"
 import InputBar from "./InputBar"
 import Message from "./Message"
 import VoiceOverlay from "./VoiceOverlay"
-import { useChat } from "../hooks/useChat"
+import { UseChatReturn } from "../hooks/useChat"
 
 type ChatAreaProps = {
   userName: string
@@ -10,6 +10,7 @@ type ChatAreaProps = {
   voiceMode: boolean
   onVoiceStart: () => void
   onVoiceStop: () => void
+  chat: UseChatReturn
 }
 
 export default function ChatArea({
@@ -18,6 +19,7 @@ export default function ChatArea({
   voiceMode,
   onVoiceStart,
   onVoiceStop,
+  chat,
 }: ChatAreaProps) {
   const {
     messages,
@@ -27,15 +29,11 @@ export default function ChatArea({
     draft,
     setDraft,
     loading,
-  } = useChat()
+  } = chat
 
   const [showMicWarning, setShowMicWarning] = useState(false)
-
   const hasStartedChat = messages.length > 0
 
-  /* ===============================
-     🎤 VOICE OVERLAY
-     =============================== */
   if (voiceMode) {
     return (
       <div className="flex-1 relative">
@@ -44,11 +42,13 @@ export default function ChatArea({
     )
   }
 
+  const handleSend = (text: string) => {
+    sendMessage(text)
+    setDraft("")
+  }
+
   return (
     <div className="flex-1 relative flex flex-col">
-      {/* ===============================
-          MAIN CONTENT
-         =============================== */}
       <div
         className={`
           flex-1 px-6
@@ -60,7 +60,6 @@ export default function ChatArea({
         `}
       >
         {!hasStartedChat ? (
-          /* -------- WELCOME STATE -------- */
           <div className="w-full max-w-3xl mx-auto flex flex-col items-start -mt-24">
             <div className="mb-3 text-white/80 text-base font-medium">
               ✨ Hi {userName}
@@ -75,10 +74,7 @@ export default function ChatArea({
                 value={draft}
                 onChange={setDraft}
                 micEnabled={micEnabled}
-                onSend={() => {
-                  sendMessage(draft)
-                  setDraft("")
-                }}
+                onSend={handleSend}
                 onMicClick={() => {
                   if (!micEnabled) {
                     setShowMicWarning(true)
@@ -97,7 +93,6 @@ export default function ChatArea({
             </div>
           </div>
         ) : (
-          /* -------- CHAT STATE -------- */
           <div className="max-w-3xl mx-auto flex flex-col gap-4">
             {messages.map((m) => (
               <Message
@@ -117,19 +112,13 @@ export default function ChatArea({
         )}
       </div>
 
-      {/* ===============================
-          BOTTOM INPUT (CHAT ONLY)
-         =============================== */}
       {hasStartedChat && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-3xl px-6">
           <InputBar
             value={draft}
             onChange={setDraft}
             micEnabled={micEnabled}
-            onSend={() => {
-              sendMessage(draft)
-              setDraft("")
-            }}
+            onSend={handleSend}
             onMicClick={() => {
               if (!micEnabled) {
                 setShowMicWarning(true)
@@ -139,12 +128,6 @@ export default function ChatArea({
               onVoiceStart()
             }}
           />
-
-          {showMicWarning && (
-            <div className="mt-2 text-sm text-purple-300 text-center">
-              Mic is disabled. Enable it from the sidebar.
-            </div>
-          )}
         </div>
       )}
     </div>

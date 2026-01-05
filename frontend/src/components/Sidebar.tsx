@@ -11,18 +11,20 @@ import cortexLogo from "../assets/Cortex_logo.png"
 type SidebarProps = {
   micEnabled: boolean
   onMicToggle: (active: boolean) => void
+  onHomeClick: () => void
 }
 
 export default function Sidebar({
   micEnabled,
   onMicToggle,
+  onHomeClick,
 }: SidebarProps) {
   const [open, setOpen] = useState(false)
 
   return (
     <>
       {/* =====================================================
-          FIXED LOGO — GROK-ALIGNED (NO SLIDE, NO GLOW)
+          FIXED LOGO — CLICKABLE HOME (GROK STYLE)
          ===================================================== */}
       <div
         className="
@@ -31,16 +33,26 @@ export default function Sidebar({
           left-0
           w-16
           z-50
-          pointer-events-none
           flex
           justify-center
         "
       >
-        <img
-          src={cortexLogo}
-          alt="Cortex"
-          className="w-10 h-10 object-contain opacity-90"
-        />
+        <button
+          onClick={onHomeClick}
+          className="
+            w-10 h-10
+            flex items-center justify-center
+            hover:opacity-90
+            transition
+          "
+          aria-label="Go to home"
+        >
+          <img
+            src={cortexLogo}
+            alt="Cortex"
+            className="w-10 h-10 object-contain opacity-90"
+          />
+        </button>
       </div>
 
       {/* =====================================================
@@ -60,7 +72,7 @@ export default function Sidebar({
         <div className="h-[88px]" />
 
         {/* =====================================================
-            NAV STACK — GROK ICON GEOMETRY
+            NAV STACK
            ===================================================== */}
         <nav
           className={`
@@ -94,7 +106,7 @@ export default function Sidebar({
         <div className="flex-1" />
 
         {/* =====================================================
-            COLLAPSE BUTTON — GROK CORNER BEHAVIOR
+            COLLAPSE BUTTON — CORNER BEHAVIOR
            ===================================================== */}
         <div
           className={`
@@ -126,7 +138,7 @@ export default function Sidebar({
 }
 
 /* =====================================================
-   NAV ITEM — GROK-ACCURATE
+   NAV ITEM
    ===================================================== */
 
 function NavItem({

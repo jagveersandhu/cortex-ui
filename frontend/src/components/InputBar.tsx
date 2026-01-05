@@ -1,9 +1,10 @@
+import { useState } from "react"
 import { Mic, MicOff } from "lucide-react"
 
 type InputBarProps = {
   value: string
   onChange: (value: string) => void
-  onSend: () => void
+  onSend: (text: string) => void
   onMicClick: () => void
   micEnabled: boolean
 }
@@ -15,12 +16,14 @@ export default function InputBar({
   onMicClick,
   micEnabled,
 }: InputBarProps) {
+  const [focused, setFocused] = useState(false)
+
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault()
         if (!value.trim()) return
-        onSend()
+        onSend(value)
       }}
       className={`
         w-full flex items-center gap-3
@@ -28,24 +31,30 @@ export default function InputBar({
         glass border border-white/10
         transition-all duration-300
         ${
-          value.length > 0
+          focused
             ? "glow-purple-strong glow-animate"
             : "glow-purple"
         }
       `}
     >
+      {/* ===============================
+          INPUT
+         =============================== */}
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
         placeholder="Ask Cortex"
         className="
           flex-1 bg-transparent outline-none
           text-white placeholder:text-white/40
         "
-        autoFocus
       />
 
-      {/* 🎤 Mic Icon */}
+      {/* ===============================
+          MIC BUTTON
+         =============================== */}
       <button
         type="button"
         onClick={onMicClick}
@@ -57,6 +66,7 @@ export default function InputBar({
               : "mic-idle hover:text-white"
           }
         `}
+        aria-label="Voice input"
       >
         {micEnabled ? <Mic size={18} /> : <MicOff size={18} />}
       </button>
