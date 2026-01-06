@@ -9,34 +9,28 @@ export default function App() {
   const [userName, setUserName] = useState<string | null>(null)
   const [showNamePrompt, setShowNamePrompt] = useState(true)
   const [isChatView, setIsChatView] = useState(false)
+
   const [micEnabled, setMicEnabled] = useState(false)
   const [voiceMode, setVoiceMode] = useState(false)
 
+  // 🔑 SINGLE CHAT ENGINE (includes RAG session)
   const chat = useChat()
 
-  /* ===============================
-     📚 LOAD FROM HISTORY
-     =============================== */
   const handleLoadHistory = (session: ChatSession) => {
     setVoiceMode(false)
     chat.loadFromHistory(session.id)
     setIsChatView(true)
   }
 
-  /* ===============================
-     ✏️ NEW CHAT
-     =============================== */
   const handleNewChat = () => {
     setVoiceMode(false)
-    chat.startNewChat()
+    chat.startNewChat() // clears RAG safely
     setIsChatView(true)
   }
 
-  /* ===============================
-     🏠 LOGO → WELCOME
-     =============================== */
   const handleLogoClick = () => {
     setVoiceMode(false)
+    chat.resetChat()    // clears RAG + messages
     setIsChatView(false)
     setShowNamePrompt(false)
   }
@@ -45,7 +39,10 @@ export default function App() {
     <div className="h-screen flex bg-black text-white relative overflow-hidden">
       <Starfield />
 
-      <button onClick={handleLogoClick} className="fixed top-6 left-1/2 -translate-x-1/2 z-40">
+      <button
+        onClick={handleLogoClick}
+        className="fixed top-6 left-1/2 -translate-x-1/2 z-40"
+      >
         Cortex
       </button>
 

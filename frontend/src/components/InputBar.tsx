@@ -1,11 +1,12 @@
-import { useState } from "react"
-import { Mic, MicOff } from "lucide-react"
+import { useState, useRef } from "react"
+import { Mic, MicOff, Paperclip } from "lucide-react"
 
 type InputBarProps = {
   value: string
   onChange: (value: string) => void
   onSend: (text: string) => void
   onMicClick: () => void
+  onUpload: (file: File) => void
   micEnabled: boolean
 }
 
@@ -14,9 +15,11 @@ export default function InputBar({
   onChange,
   onSend,
   onMicClick,
+  onUpload,
   micEnabled,
 }: InputBarProps) {
   const [focused, setFocused] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   return (
     <form
@@ -34,7 +37,45 @@ export default function InputBar({
       `}
     >
       {/* ===============================
-          INPUT
+          📎 UPLOAD BUTTON
+         =============================== */}
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        className="
+          p-1 rounded-full
+          text-white/60
+          hover:text-white
+          hover:bg-white/10
+          transition
+        "
+        aria-label="Upload document"
+        title="Upload document"
+      >
+        <Paperclip size={18} />
+      </button>
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        hidden
+        accept="
+          .pdf,
+          .doc,.docx,
+          .txt,
+          .ppt,.pptx,
+          image/*
+        "
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          if (file) onUpload(file)
+          e.target.value = "" // allow re-upload same file
+        }}
+      />
+
+      {/* ===============================
+          💬 TEXT INPUT
          =============================== */}
       <input
         value={value}
@@ -50,7 +91,7 @@ export default function InputBar({
       />
 
       {/* ===============================
-          MIC BUTTON
+          🎙 MIC BUTTON
          =============================== */}
       <button
         type="button"

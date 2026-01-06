@@ -28,7 +28,7 @@ export function useChat() {
   const [loading, setLoading] = useState(false)
   const [draft, setDraft] = useState("")
 
-  /* -------- SESSION HISTORY -------- */
+  /* -------- SESSION-ONLY HISTORY -------- */
   const [history, setHistory] = useState<ChatSession[]>([])
 
   /* Prevent stale closures */
@@ -36,9 +36,13 @@ export function useChat() {
   messagesRef.current = messages
 
   /* ===============================
-     📩 SEND MESSAGE
+     📩 SEND MESSAGE (RAG-AWARE)
      =============================== */
-  async function sendMessage(text: string) {
+  async function sendMessage(
+    text: string,
+    userName?: string,
+    sessionId?: string
+  ) {
     if (!text.trim()) return
 
     const userMsg: ChatMessage = {
@@ -51,7 +55,11 @@ export function useChat() {
     setLoading(true)
 
     try {
-      const response = await sendMessageToAPI(text)
+      const response = await sendMessageToAPI(
+        text,
+        userName,
+        sessionId
+      )
 
       const assistantMsg: ChatMessage = {
         id: crypto.randomUUID(),
@@ -62,7 +70,6 @@ export function useChat() {
       setMessages((prev) => [...prev, assistantMsg])
     } finally {
       setLoading(false)
-      setDraft("")
     }
   }
 
@@ -83,9 +90,13 @@ export function useChat() {
   }
 
   /* ===============================
-     🔁 REGENERATE RESPONSE
+     🔁 REGENERATE RESPONSE (RAG-AWARE)
      =============================== */
-  async function regenerate(messageId: string) {
+  async function regenerate(
+    messageId: string,
+    userName?: string,
+    sessionId?: string
+  ) {
     const current = messagesRef.current
     const index = current.findIndex((m) => m.id === messageId)
 
@@ -99,7 +110,13 @@ export function useChat() {
     if (!prevUser) return
 
     setMessages(current.slice(0, index))
-    await sendMessage(prevUser.content)
+    setLoading(true)
+
+    await sendMessage(
+      prevUser.content,
+      userName,
+      sessionId
+    )
   }
 
   /* ===============================
@@ -137,7 +154,7 @@ export function useChat() {
   }
 
   /* ===============================
-     🏠 HARD RESET (NO ARCHIVE)
+     🏠 HARD RESET
      =============================== */
   function resetChat() {
     setMessages([])

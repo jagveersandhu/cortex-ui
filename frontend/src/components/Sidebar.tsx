@@ -7,7 +7,7 @@ import {
   ChevronLeft,
 } from "lucide-react"
 import cortexLogo from "../assets/Cortex_logo.png"
-import type { ChatSession } from "../hooks/useChat" // ✅ SINGLE SOURCE OF TRUTH
+import type { ChatSession } from "../hooks/useChat"
 
 /* ===============================
    PROPS
@@ -18,9 +18,9 @@ type SidebarProps = {
   onHomeClick: () => void
   onNewChat: () => void
 
-  /* 🆕 HISTORY */
-  history?: ChatSession[]
-  onSelectHistory?: (session: ChatSession) => void
+  /* Session-only history */
+  history: ChatSession[]
+  onSelectHistory: (session: ChatSession) => void
 }
 
 export default function Sidebar({
@@ -28,7 +28,7 @@ export default function Sidebar({
   onMicToggle,
   onHomeClick,
   onNewChat,
-  history = [],
+  history,
   onSelectHistory,
 }: SidebarProps) {
   const [open, setOpen] = useState(false)
@@ -36,7 +36,9 @@ export default function Sidebar({
 
   return (
     <>
-      {/* FIXED LOGO — HOME */}
+      {/* ===============================
+          FIXED LOGO — HOME
+         =============================== */}
       <div className="fixed top-6 left-0 w-16 z-50 flex justify-center">
         <button
           onClick={onHomeClick}
@@ -51,7 +53,9 @@ export default function Sidebar({
         </button>
       </div>
 
-      {/* SIDEBAR */}
+      {/* ===============================
+          SIDEBAR
+         =============================== */}
       <aside
         className={`
           h-full bg-black border-r border-white/10
@@ -60,6 +64,7 @@ export default function Sidebar({
           flex flex-col
         `}
       >
+        {/* spacer for logo */}
         <div className="h-[88px]" />
 
         <nav
@@ -80,7 +85,7 @@ export default function Sidebar({
             }}
           />
 
-          {/* MIC */}
+          {/* MIC TOGGLE */}
           <NavItem
             icon={micEnabled ? <Mic size={20} /> : <MicOff size={20} />}
             label="Voice"
@@ -97,36 +102,42 @@ export default function Sidebar({
           />
 
           {/* HISTORY LIST */}
-          {open && showHistory && history.length > 0 && (
-            <div className="mt-1 space-y-1">
-              {history.map((session) => (
-                <button
-                  key={session.id}
-                  onClick={() => onSelectHistory?.(session)}
-                  className="
-                    w-full text-left px-3 py-2 rounded-lg
-                    text-sm text-white/70
-                    hover:bg-white/10 hover:text-white
-                    transition
-                  "
-                >
-                  {session.title}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {open && showHistory && history.length === 0 && (
-            <div className="px-3 py-2 text-xs text-white/40">
-              No history yet
-            </div>
+          {open && showHistory && (
+            <>
+              {history.length > 0 ? (
+                <div className="mt-1 space-y-1">
+                  {history.map((session) => (
+                    <button
+                      key={session.id}
+                      onClick={() => onSelectHistory(session)}
+                      className="
+                        w-full text-left px-3 py-2 rounded-lg
+                        text-sm text-white/70
+                        hover:bg-white/10 hover:text-white
+                        transition
+                      "
+                    >
+                      {session.title}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="px-3 py-2 text-xs text-white/40">
+                  No history yet
+                </div>
+              )}
+            </>
           )}
         </nav>
 
         <div className="flex-1" />
 
-        {/* COLLAPSE */}
-        <div className={`pb-4 flex ${open ? "justify-end pr-4" : "justify-center"}`}>
+        {/* COLLAPSE BUTTON */}
+        <div
+          className={`pb-4 flex ${
+            open ? "justify-end pr-4" : "justify-center"
+          }`}
+        >
           <button
             onClick={() => setOpen(!open)}
             className="w-10 h-10 rounded-lg hover:bg-white/10 flex items-center justify-center"
