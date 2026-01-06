@@ -30,11 +30,7 @@ export default function InputBar({
         px-4 py-3 rounded-full
         glass border border-white/10
         transition-all duration-300
-        ${
-          focused
-            ? "glow-purple-strong glow-animate"
-            : "glow-purple"
-        }
+        ${focused ? "glow-purple-strong glow-animate" : "glow-purple"}
       `}
     >
       {/* ===============================
@@ -50,6 +46,7 @@ export default function InputBar({
           flex-1 bg-transparent outline-none
           text-white placeholder:text-white/40
         "
+        aria-label="Chat input"
       />
 
       {/* ===============================
@@ -66,7 +63,12 @@ export default function InputBar({
               : "mic-idle hover:text-white"
           }
         `}
-        aria-label="Voice input"
+        aria-label={micEnabled ? "Start voice input" : "Mic disabled"}
+        title={
+          micEnabled
+            ? "Speak to dictate"
+            : "Enable microphone from sidebar"
+        }
       >
         {micEnabled ? <Mic size={18} /> : <MicOff size={18} />}
       </button>

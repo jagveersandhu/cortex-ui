@@ -3,65 +3,49 @@ import Sidebar from "../components/Sidebar"
 import ChatArea from "../components/ChatArea"
 import Starfield from "../components/Starfield"
 import NamePromptModal from "../components/NamePromptModal"
-import { useChat } from "../hooks/useChat"
+import { useChat, ChatSession } from "../hooks/useChat"
 
 export default function App() {
   const [userName, setUserName] = useState<string | null>(null)
-
-  // onboarding → only once
   const [showNamePrompt, setShowNamePrompt] = useState(true)
-
-  // layout control
   const [isChatView, setIsChatView] = useState(false)
-
   const [micEnabled, setMicEnabled] = useState(false)
   const [voiceMode, setVoiceMode] = useState(false)
 
   const chat = useChat()
 
   /* ===============================
-     🏠 LOGO CLICK → WELCOME UI
+     📚 LOAD FROM HISTORY
      =============================== */
-  const handleLogoClick = () => {
+  const handleLoadHistory = (session: ChatSession) => {
     setVoiceMode(false)
-    chat.resetChat()
-
-    // ⬅️ THIS IS THE KEY
-    setIsChatView(false)
-
-    // ❌ never reopen name modal
-    setShowNamePrompt(false)
-
-    window.scrollTo({ top: 0, behavior: "smooth" })
+    chat.loadFromHistory(session.id)
+    setIsChatView(true)
   }
 
   /* ===============================
-     ✏️ NEW CHAT → CHAT UI
+     ✏️ NEW CHAT
      =============================== */
   const handleNewChat = () => {
     setVoiceMode(false)
-    chat.resetChat()
+    chat.startNewChat()
     setIsChatView(true)
+  }
+
+  /* ===============================
+     🏠 LOGO → WELCOME
+     =============================== */
+  const handleLogoClick = () => {
+    setVoiceMode(false)
+    setIsChatView(false)
+    setShowNamePrompt(false)
   }
 
   return (
     <div className="h-screen flex bg-black text-white relative overflow-hidden">
       <Starfield />
 
-      {/* BRAND — CLICKABLE */}
-      <button
-        onClick={handleLogoClick}
-        className="
-          fixed top-6 left-1/2 -translate-x-1/2
-          z-40
-          text-2xl md:text-[26px]
-          font-semibold tracking-[0.18em]
-          text-white/95
-          hover:opacity-90
-          transition
-          select-none
-        "
-      >
+      <button onClick={handleLogoClick} className="fixed top-6 left-1/2 -translate-x-1/2 z-40">
         Cortex
       </button>
 
@@ -70,6 +54,8 @@ export default function App() {
         onMicToggle={setMicEnabled}
         onHomeClick={handleLogoClick}
         onNewChat={handleNewChat}
+        history={chat.history}
+        onSelectHistory={handleLoadHistory}
       />
 
       <ChatArea
@@ -83,7 +69,6 @@ export default function App() {
         chat={chat}
       />
 
-      {/* ONBOARDING — FIRST LOAD ONLY */}
       {showNamePrompt && (
         <NamePromptModal
           onSubmit={(name) => {

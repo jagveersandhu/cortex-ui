@@ -7,12 +7,20 @@ import {
   ChevronLeft,
 } from "lucide-react"
 import cortexLogo from "../assets/Cortex_logo.png"
+import type { ChatSession } from "../hooks/useChat" // ✅ SINGLE SOURCE OF TRUTH
 
+/* ===============================
+   PROPS
+   =============================== */
 type SidebarProps = {
   micEnabled: boolean
   onMicToggle: (active: boolean) => void
   onHomeClick: () => void
-  onNewChat: () => void   // ✅ already passed from App
+  onNewChat: () => void
+
+  /* 🆕 HISTORY */
+  history?: ChatSession[]
+  onSelectHistory?: (session: ChatSession) => void
 }
 
 export default function Sidebar({
@@ -20,23 +28,16 @@ export default function Sidebar({
   onMicToggle,
   onHomeClick,
   onNewChat,
+  history = [],
+  onSelectHistory,
 }: SidebarProps) {
   const [open, setOpen] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
 
   return (
     <>
       {/* FIXED LOGO — HOME */}
-      <div
-        className="
-          fixed
-          top-6
-          left-0
-          w-16
-          z-50
-          flex
-          justify-center
-        "
-      >
+      <div className="fixed top-6 left-0 w-16 z-50 flex justify-center">
         <button
           onClick={onHomeClick}
           className="w-10 h-10 flex items-center justify-center hover:opacity-90 transition"
@@ -53,9 +54,7 @@ export default function Sidebar({
       {/* SIDEBAR */}
       <aside
         className={`
-          h-full
-          bg-black
-          border-r border-white/10
+          h-full bg-black border-r border-white/10
           transition-[width] duration-300 ease-in-out
           ${open ? "w-64" : "w-16"}
           flex flex-col
@@ -65,21 +64,23 @@ export default function Sidebar({
 
         <nav
           className={`
-            flex flex-col
+            flex flex-col gap-3 px-2
             ${open ? "items-stretch" : "items-center"}
-            gap-3
-            px-2
           `}
         >
-          {/* ✅ EXISTING CHAT BUTTON — NOW WIRED */}
+          {/* NEW CHAT */}
           <NavItem
             icon={<Pencil size={20} />}
             label="Chat"
             open={open}
             active
-            onClick={onNewChat}
+            onClick={() => {
+              onNewChat()
+              setShowHistory(false)
+            }}
           />
 
+          {/* MIC */}
           <NavItem
             icon={micEnabled ? <Mic size={20} /> : <MicOff size={20} />}
             label="Voice"
@@ -87,22 +88,45 @@ export default function Sidebar({
             onClick={() => onMicToggle(!micEnabled)}
           />
 
+          {/* HISTORY TOGGLE */}
           <NavItem
             icon={<History size={20} />}
             label="History"
             open={open}
+            onClick={() => setShowHistory((v) => !v)}
           />
+
+          {/* HISTORY LIST */}
+          {open && showHistory && history.length > 0 && (
+            <div className="mt-1 space-y-1">
+              {history.map((session) => (
+                <button
+                  key={session.id}
+                  onClick={() => onSelectHistory?.(session)}
+                  className="
+                    w-full text-left px-3 py-2 rounded-lg
+                    text-sm text-white/70
+                    hover:bg-white/10 hover:text-white
+                    transition
+                  "
+                >
+                  {session.title}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {open && showHistory && history.length === 0 && (
+            <div className="px-3 py-2 text-xs text-white/40">
+              No history yet
+            </div>
+          )}
         </nav>
 
         <div className="flex-1" />
 
-        <div
-          className={`
-            pb-4
-            flex
-            ${open ? "justify-end pr-4" : "justify-center"}
-          `}
-        >
+        {/* COLLAPSE */}
+        <div className={`pb-4 flex ${open ? "justify-end pr-4" : "justify-center"}`}>
           <button
             onClick={() => setOpen(!open)}
             className="w-10 h-10 rounded-lg hover:bg-white/10 flex items-center justify-center"
@@ -118,7 +142,9 @@ export default function Sidebar({
   )
 }
 
-/* NAV ITEM — UNCHANGED */
+/* ===============================
+   NAV ITEM
+   =============================== */
 function NavItem({
   icon,
   label,
@@ -142,8 +168,7 @@ function NavItem({
             ? "flex items-center gap-3 px-3 rounded-xl"
             : "w-11 flex items-center justify-center rounded-xl"
         }
-        text-sm
-        transition
+        text-sm transition
         ${
           active
             ? "bg-white/10 text-white"

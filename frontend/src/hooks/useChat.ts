@@ -1,5 +1,10 @@
 import { useState, useRef } from "react"
 import { sendMessageToAPI } from "../services/api"
+import { generateChatTitle } from "../utils/chatTitle"
+
+/* ===============================
+   TYPES
+   =============================== */
 
 export type ChatMessage = {
   id: string
@@ -7,12 +12,26 @@ export type ChatMessage = {
   content: string
 }
 
+export type ChatSession = {
+  id: string
+  title: string
+  messages: ChatMessage[]
+}
+
+/* ===============================
+   HOOK
+   =============================== */
+
 export function useChat() {
+  /* -------- ACTIVE CHAT -------- */
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loading, setLoading] = useState(false)
   const [draft, setDraft] = useState("")
 
-  // Keeps latest messages (prevents stale closures)
+  /* -------- SESSION HISTORY -------- */
+  const [history, setHistory] = useState<ChatSession[]>([])
+
+  /* Prevent stale closures */
   const messagesRef = useRef<ChatMessage[]>([])
   messagesRef.current = messages
 
@@ -84,16 +103,41 @@ export function useChat() {
   }
 
   /* ===============================
-     🆕 NEW CHAT (STAY IN CHAT UI)
+     🆕 NEW CHAT (ARCHIVE CURRENT)
      =============================== */
   function startNewChat() {
+    const currentMessages = messagesRef.current
+
+    if (currentMessages.length > 0) {
+      setHistory((prev) => [
+        {
+          id: crypto.randomUUID(),
+          title: generateChatTitle(currentMessages),
+          messages: currentMessages,
+        },
+        ...prev,
+      ])
+    }
+
     setMessages([])
     setDraft("")
     setLoading(false)
   }
 
   /* ===============================
-     🏠 HARD RESET (OPTIONAL)
+     📂 LOAD FROM HISTORY
+     =============================== */
+  function loadFromHistory(sessionId: string) {
+    const session = history.find((h) => h.id === sessionId)
+    if (!session) return
+
+    setMessages(session.messages)
+    setDraft("")
+    setLoading(false)
+  }
+
+  /* ===============================
+     🏠 HARD RESET (NO ARCHIVE)
      =============================== */
   function resetChat() {
     setMessages([])
@@ -102,15 +146,24 @@ export function useChat() {
   }
 
   return {
+    /* active chat */
     messages,
     loading,
     draft,
     setDraft,
+
+    /* actions */
     sendMessage,
     editMessage,
     regenerate,
-    startNewChat, // 👈 use this for "New Chat"
-    resetChat,    // 👈 optional hard reset
+
+    /* history */
+    history,
+    startNewChat,
+    loadFromHistory,
+
+    /* utility */
+    resetChat,
   }
 }
 

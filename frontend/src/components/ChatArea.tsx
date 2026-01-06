@@ -3,6 +3,7 @@ import InputBar from "./InputBar"
 import Message from "./Message"
 import VoiceOverlay from "./VoiceOverlay"
 import { UseChatReturn } from "../hooks/useChat"
+import { useSpeechRecognition } from "../hooks/useSpeechRecognition"
 
 type ChatAreaProps = {
   userName: string
@@ -37,8 +38,11 @@ export default function ChatArea({
 
   const [showMicWarning, setShowMicWarning] = useState(false)
 
+  // 🎙 Speech recognition hook
+  const speech = useSpeechRecognition()
+
   /* ===============================
-     🎤 VOICE OVERLAY
+     🎤 VOICE OVERLAY (OPTIONAL)
      =============================== */
   if (voiceMode) {
     return (
@@ -49,13 +53,29 @@ export default function ChatArea({
   }
 
   /* ===============================
-     SEND HANDLER
+     📩 SEND HANDLER (ONLY PLACE THAT STARTS CHAT)
      =============================== */
   const handleSend = (text: string) => {
     if (!text.trim()) return
-    onStartChat()          // ⬅️ switch to chat layout
+    onStartChat()
     sendMessage(text)
     setDraft("")
+  }
+
+  /* ===============================
+     🎙 MIC HANDLER (REAL STT)
+     =============================== */
+  const handleMicClick = () => {
+    if (!micEnabled) {
+      setShowMicWarning(true)
+      setTimeout(() => setShowMicWarning(false), 2500)
+      return
+    }
+
+    // 🔥 ACTUAL SPEECH → TEXT
+    speech.start((transcript) => {
+      setDraft(transcript)
+    })
   }
 
   return (
@@ -66,7 +86,11 @@ export default function ChatArea({
       <div
         className={`
           flex-1 px-6
-          ${isChatView ? "overflow-y-auto pt-10 pb-36" : "flex items-center justify-center"}
+          ${
+            isChatView
+              ? "overflow-y-auto pt-10 pb-36"
+              : "flex items-center justify-center"
+          }
         `}
       >
         {!isChatView ? (
@@ -86,14 +110,7 @@ export default function ChatArea({
                 onChange={setDraft}
                 micEnabled={micEnabled}
                 onSend={handleSend}
-                onMicClick={() => {
-                  if (!micEnabled) {
-                    setShowMicWarning(true)
-                    setTimeout(() => setShowMicWarning(false), 2500)
-                    return
-                  }
-                  onVoiceStart()
-                }}
+                onMicClick={handleMicClick}
               />
 
               {showMicWarning && (
@@ -134,14 +151,7 @@ export default function ChatArea({
             onChange={setDraft}
             micEnabled={micEnabled}
             onSend={handleSend}
-            onMicClick={() => {
-              if (!micEnabled) {
-                setShowMicWarning(true)
-                setTimeout(() => setShowMicWarning(false), 2500)
-                return
-              }
-              onVoiceStart()
-            }}
+            onMicClick={handleMicClick}
           />
         </div>
       )}
