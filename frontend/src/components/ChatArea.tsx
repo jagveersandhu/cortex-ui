@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import InputBar from "./InputBar"
 import Message from "./Message"
 import VoiceOverlay from "./VoiceOverlay"
@@ -40,11 +40,21 @@ export default function ChatArea({
   const [showMicWarning, setShowMicWarning] = useState(false)
   const [uploadStatus, setUploadStatus] = useState<string | null>(null)
 
-  // 🔑 Ephemeral RAG session (per chat)
+  // 🔑 Ephemeral RAG session (BOUND TO CURRENT CHAT ONLY)
   const [ragSessionId, setRagSessionId] = useState<string | null>(null)
 
   // 🎙 Speech recognition
   const speech = useSpeechRecognition()
+
+  /* ===============================
+     🔥 RESET RAG WHEN CHAT ENDS
+     =============================== */
+  useEffect(() => {
+    if (!isChatView) {
+      // User left chat → nuke document memory
+      setRagSessionId(null)
+    }
+  }, [isChatView])
 
   /* ===============================
      🎤 VOICE OVERLAY
@@ -65,10 +75,9 @@ export default function ChatArea({
 
     onStartChat()
 
-    // ✅ Clear input immediately (UX-first)
+    // ✅ UX FIRST — clear input immediately
     setDraft("")
 
-    // ✅ Normalize null → undefined
     sendMessage(
       text,
       userName || undefined,
@@ -103,13 +112,16 @@ export default function ChatArea({
   }
 
   /* ===============================
-     📎 FILE UPLOAD (EPHEMERAL RAG)
+     📎 FILE UPLOAD (NEW DOC = NEW MEMORY)
      =============================== */
   const handleUpload = async (file: File) => {
     onStartChat()
     setUploadStatus("📤 Uploading document…")
 
     try {
+      // ❗ IMPORTANT: replace any previous document
+      setRagSessionId(null)
+
       setUploadStatus("📄 Parsing document…")
 
       const sessionId = await uploadDocument(file)
@@ -126,9 +138,6 @@ export default function ChatArea({
     }
   }
 
-  /* ===============================
-     UI
-     =============================== */
   return (
     <div className="flex-1 relative flex flex-col">
       <div
